@@ -1,20 +1,82 @@
-SocialNU API - Assignment 5
+# SocialNU API
 
-Approach
+Backend API for the [SocialNU](https://github.com/starJin2003/DISC-socialNU) web app. Built with Node.js and Express, connected to Supabase PostgreSQL. Serves student profile data to the React frontend.
 
-I developed a RESTful API using Node.js and Express to connect the SocialNU frontend with a PostgreSQL database. The backend handles data retrieval using the pg library, and sensitive credentials are managed securely through a .env file.
+## Endpoints
 
-Key Takeaways
+**`GET /users`** - Returns all users from the `users` table.
 
-- Learned how to integrate a live database with a React application.
+**`GET /users/profiles`** - Returns all users with their profile data joined from `user_profiles` (major, bio, shared classes, course tags). This is the main endpoint the frontend consumes.
 
-- Gained experience in using environment variables for both backend and frontend security.
+## Tech Stack
 
-- Understood the process of fetching and rendering dynamic data in a grid layout.
+- Node.js + Express 5
+- Supabase JS client for database queries
+- CORS enabled for frontend communication
+- dotenv for environment variables
 
-Challenges
-Synchronized the database schema with the existing UI components to ensure the 6-student grid displays correctly.
+Originally connected to Render PostgreSQL using the `pg` library with raw SQL, then migrated to the Supabase JS client for cleaner relational queries.
 
-Mapped database query results to React state to maintain design consistency.
+## Database Schema (Supabase PostgreSQL)
 
-assignment 6 completed as well. 
+**`users`** table:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | int4 | Primary key |
+| first_name | text | Student's first name |
+| last_name | text | Student's last name |
+| email | text | Northwestern email |
+
+**`user_profiles`** table:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | int4 | Foreign key to users.id |
+| date_of_birth | date | Birthday |
+| bio | text | Short bio (e.g., "Active DISC member") |
+| major | text | Academic major |
+| shared_classes | int4 | Number of shared classes with current user |
+| tags | text[] | Array of course/org tags (e.g., ["CS 211", "MATH 228-1", "DISC"]) |
+
+The `/users/profiles` endpoint joins these two tables using Supabase's relational query syntax:
+
+```javascript
+const { data, error } = await supabase
+  .from('users')
+  .select(`*, user_profiles (*)`);
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- A Supabase project with the tables above set up
+
+### Installation
+
+```bash
+git clone https://github.com/starJin2003/socialnu-api.git
+cd socialnu-api
+npm install
+```
+
+Create a `.env` file:
+
+```
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### Running
+
+```bash
+node server.js
+```
+
+Runs on `http://localhost:5001`.
+
+## Related
+
+- [DISC-socialNU](https://github.com/starJin2003/DISC-socialNU) - React frontend that consumes this API
